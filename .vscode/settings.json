@@ -1,0 +1,8 @@
+{
+  "editor.formatOnSave": true,
+  "deno.cacheOnSave": true,
+  "prettier.configPath": ".prettierrc.js",
+  "prettier.semi": false,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.documentSelectors": ["**/*.{ts,js,json}"]
+}

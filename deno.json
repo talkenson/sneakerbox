@@ -1,0 +1,15 @@
+{
+    "tasks": {
+        "dev": "deno run -A --unstable --watch=src/ src/main.ts"
+    },
+    "nodeModulesDir": true,
+    "importMap": "./import_map.json",
+    "lint": {
+        "files": {
+            "include": ["src/"]
+        },
+        "rules": {
+            "exclude": ["no-unused-vars"]
+        }
+    }
+}

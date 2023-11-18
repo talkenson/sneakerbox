@@ -1,0 +1,11 @@
+{
+    "imports": {
+        "$types/": "./src/types/",
+        "$api/": "./src/api/",
+        "$domain/": "./src/domain/",
+        "~": "./src/imports.ts",
+
+        "oak": "https://deno.land/x/oak@v12.6.1/mod.ts",
+        "fp-ts/": "https://deno.land/x/fp_ts@v2.11.4/"
+    }
+}

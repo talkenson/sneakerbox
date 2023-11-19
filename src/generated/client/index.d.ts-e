@@ -4,45 +4,25 @@
 **/
 
 import * as runtime from './runtime/library';
-type UnwrapPromise<P extends any> = P extends Promise<infer R> ? R : P
-type UnwrapTuple<Tuple extends readonly unknown[]> = {
-  [K in keyof Tuple]: K extends `${number}` ? Tuple[K] extends Prisma.PrismaPromise<infer X> ? X : UnwrapPromise<Tuple[K]> : UnwrapPromise<Tuple[K]>
-};
+import $Types = runtime.Types // general types
+import $Public = runtime.Types.Public
+import $Utils = runtime.Types.Utils
+import $Extensions = runtime.Types.Extensions
+import $Result = runtime.Types.Result
 
-export type PrismaPromise<T> = runtime.Types.Public.PrismaPromise<T>
+export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
 
 /**
  * Model SneakerImage
  * 
  */
-export type SneakerImage = {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  url: string
-  sneakerId: string
-}
-
+export type SneakerImage = $Result.DefaultSelection<Prisma.$SneakerImagePayload>
 /**
  * Model Sneaker
  * 
  */
-export type Sneaker = {
-  id: string
-  createdAt: Date
-  updatedAt: Date
-  name: string
-  description: string
-  brand: string
-  colorway: string
-  releaseDate: Date
-  retailPrice: number
-  silhouette: string
-  sizes: number[]
-  quantity: number
-}
-
+export type Sneaker = $Result.DefaultSelection<Prisma.$SneakerPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -61,10 +41,10 @@ export type Sneaker = {
 export class PrismaClient<
   T extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
   U = 'log' extends keyof T ? T['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<T['log']> : never : never,
-  GlobalReject extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined = 'rejectOnNotFound' extends keyof T
-    ? T['rejectOnNotFound']
-    : false
-      > {
+  ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+> {
+  [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
+
     /**
    * ##  Prisma Client ʲˢ
    * 
@@ -81,20 +61,22 @@ export class PrismaClient<
    */
 
   constructor(optionsArg ?: Prisma.Subset<T, Prisma.PrismaClientOptions>);
-  $on<V extends (U | 'beforeExit')>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : V extends 'beforeExit' ? () => Promise<void> : Prisma.LogEvent) => void): void;
+  $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): void;
 
   /**
    * Connect with the database
    */
-  $connect(): Promise<void>;
+  $connect(): $Utils.JsPromise<void>;
 
   /**
    * Disconnect from the database
    */
-  $disconnect(): Promise<void>;
+  $disconnect(): $Utils.JsPromise<void>;
 
   /**
    * Add a middleware
+   * @deprecated since 4.16.0. For new code, prefer client extensions instead.
+   * @see https://pris.ly/d/extensions
    */
   $use(cb: Prisma.Middleware): void
 
@@ -157,9 +139,12 @@ export class PrismaClient<
    * 
    * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
-  $transaction<R>(fn: (prisma: Omit<this, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use">) => Promise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): Promise<R>
+  $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
+
+
+  $extends: $Extensions.ExtendsHook<'extends', Prisma.TypeMapCb, ExtArgs>
 
       /**
    * `prisma.sneakerImage`: Exposes CRUD operations for the **SneakerImage** model.
@@ -169,7 +154,7 @@ export class PrismaClient<
     * const sneakerImages = await prisma.sneakerImage.findMany()
     * ```
     */
-  get sneakerImage(): Prisma.SneakerImageDelegate<GlobalReject>;
+  get sneakerImage(): Prisma.SneakerImageDelegate<ExtArgs>;
 
   /**
    * `prisma.sneaker`: Exposes CRUD operations for the **Sneaker** model.
@@ -179,13 +164,18 @@ export class PrismaClient<
     * const sneakers = await prisma.sneaker.findMany()
     * ```
     */
-  get sneaker(): Prisma.SneakerDelegate<GlobalReject>;
+  get sneaker(): Prisma.SneakerDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
   export import DMMF = runtime.DMMF
 
-  export type PrismaPromise<T> = runtime.Types.Public.PrismaPromise<T>
+  export type PrismaPromise<T> = $Public.PrismaPromise<T>
+
+  /**
+   * Validator
+   */
+  export import validator = runtime.Public.validator
 
   /**
    * Prisma Errors
@@ -221,10 +211,19 @@ export namespace Prisma {
   export type MetricHistogram = runtime.MetricHistogram
   export type MetricHistogramBucket = runtime.MetricHistogramBucket
 
+  /**
+  * Extensions
+  */
+  export import Extension = $Extensions.UserArgs
+  export import getExtensionContext = runtime.Extensions.getExtensionContext
+  export import Args = $Public.Args
+  export import Payload = $Public.Payload
+  export import Result = $Public.Result
+  export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 4.12.0
-   * Query Engine version: 659ef412370fa3b41cd7bf6e94587c1dfb7f67e7
+   * Prisma Client JS version: 5.6.0
+   * Query Engine version: e95e739751f42d8ca026f6b910f5a2dc5adeaeee
    */
   export type PrismaVersion = {
     client: string
@@ -280,7 +279,7 @@ export namespace Prisma {
    *
    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-by-null-values
    */
-  export type InputJsonValue = string | number | boolean | InputJsonObject | InputJsonArray
+  export type InputJsonValue = string | number | boolean | InputJsonObject | InputJsonArray | { toJSON(): unknown }
 
   /**
    * Types of the values used to represent different kinds of `null` values when working with JSON fields.
@@ -350,19 +349,6 @@ export namespace Prisma {
     select: any
     include: any
   }
-  type HasSelect = {
-    select: any
-  }
-  type HasInclude = {
-    include: any
-  }
-  type CheckSelect<T, S, U> = T extends SelectAndInclude
-    ? 'Please either choose `select` or `include`'
-    : T extends HasSelect
-    ? U
-    : T extends HasInclude
-    ? U
-    : S
 
   /**
    * Get the type of the value, that the Promise holds.
@@ -372,7 +358,7 @@ export namespace Prisma {
   /**
    * Get the return type of a function which returns a Promise.
    */
-  export type PromiseReturnType<T extends (...args: any) => Promise<any>> = PromiseType<ReturnType<T>>
+  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
 
   /**
    * From T, pick a set of properties whose keys are in the union K
@@ -592,7 +578,7 @@ export namespace Prisma {
 
   export const type: unique symbol;
 
-  export function validator<V>(): <S>(select: runtime.Types.Utils.LegacyExact<S, V>) => S;
+
 
   /**
    * Used by group by
@@ -633,9 +619,9 @@ export namespace Prisma {
   type MaybeTupleToUnion<T> = T extends any[] ? TupleToUnion<T> : T
 
   /**
-   * Like `Pick`, but with an array
+   * Like `Pick`, but additionally can also accept an array of keys
    */
-  type PickArray<T, K extends Array<keyof T>> = Prisma__Pick<T, TupleToUnion<K>>
+  type PickEnumerable<T, K extends Enumerable<keyof T> | keyof T> = Prisma__Pick<T, MaybeTupleToUnion<K>>
 
   /**
    * Exclude all keys with underscores
@@ -660,56 +646,189 @@ export namespace Prisma {
     db?: Datasource
   }
 
-  export type DefaultPrismaClient = PrismaClient
-  export type RejectOnNotFound = boolean | ((error: Error) => Error)
-  export type RejectPerModel = { [P in ModelName]?: RejectOnNotFound }
-  export type RejectPerOperation =  { [P in "findUnique" | "findFirst"]?: RejectPerModel | RejectOnNotFound } 
-  type IsReject<T> = T extends true ? True : T extends (err: Error) => Error ? True : False
-  export type HasReject<
-    GlobalRejectSettings extends Prisma.PrismaClientOptions['rejectOnNotFound'],
-    LocalRejectSettings,
-    Action extends PrismaAction,
-    Model extends ModelName
-  > = LocalRejectSettings extends RejectOnNotFound
-    ? IsReject<LocalRejectSettings>
-    : GlobalRejectSettings extends RejectPerOperation
-    ? Action extends keyof GlobalRejectSettings
-      ? GlobalRejectSettings[Action] extends RejectOnNotFound
-        ? IsReject<GlobalRejectSettings[Action]>
-        : GlobalRejectSettings[Action] extends RejectPerModel
-        ? Model extends keyof GlobalRejectSettings[Action]
-          ? IsReject<GlobalRejectSettings[Action][Model]>
-          : False
-        : False
-      : False
-    : IsReject<GlobalRejectSettings>
-  export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
 
+  interface TypeMapCb extends $Utils.Fn<{extArgs: $Extensions.InternalArgs}, $Utils.Record<string, any>> {
+    returns: Prisma.TypeMap<this['params']['extArgs']>
+  }
+
+  export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    meta: {
+      modelProps: 'sneakerImage' | 'sneaker'
+      txIsolationLevel: Prisma.TransactionIsolationLevel
+    },
+    model: {
+      SneakerImage: {
+        payload: Prisma.$SneakerImagePayload<ExtArgs>
+        fields: Prisma.SneakerImageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SneakerImageFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SneakerImageFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          findFirst: {
+            args: Prisma.SneakerImageFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SneakerImageFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          findMany: {
+            args: Prisma.SneakerImageFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>[]
+          }
+          create: {
+            args: Prisma.SneakerImageCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          createMany: {
+            args: Prisma.SneakerImageCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.SneakerImageDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          update: {
+            args: Prisma.SneakerImageUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          deleteMany: {
+            args: Prisma.SneakerImageDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SneakerImageUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.SneakerImageUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerImagePayload>
+          }
+          aggregate: {
+            args: Prisma.SneakerImageAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateSneakerImage>
+          }
+          groupBy: {
+            args: Prisma.SneakerImageGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<SneakerImageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SneakerImageCountArgs<ExtArgs>,
+            result: $Utils.Optional<SneakerImageCountAggregateOutputType> | number
+          }
+        }
+      }
+      Sneaker: {
+        payload: Prisma.$SneakerPayload<ExtArgs>
+        fields: Prisma.SneakerFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SneakerFindUniqueArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SneakerFindUniqueOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          findFirst: {
+            args: Prisma.SneakerFindFirstArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SneakerFindFirstOrThrowArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          findMany: {
+            args: Prisma.SneakerFindManyArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>[]
+          }
+          create: {
+            args: Prisma.SneakerCreateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          createMany: {
+            args: Prisma.SneakerCreateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          delete: {
+            args: Prisma.SneakerDeleteArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          update: {
+            args: Prisma.SneakerUpdateArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          deleteMany: {
+            args: Prisma.SneakerDeleteManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SneakerUpdateManyArgs<ExtArgs>,
+            result: Prisma.BatchPayload
+          }
+          upsert: {
+            args: Prisma.SneakerUpsertArgs<ExtArgs>,
+            result: $Utils.PayloadToResult<Prisma.$SneakerPayload>
+          }
+          aggregate: {
+            args: Prisma.SneakerAggregateArgs<ExtArgs>,
+            result: $Utils.Optional<AggregateSneaker>
+          }
+          groupBy: {
+            args: Prisma.SneakerGroupByArgs<ExtArgs>,
+            result: $Utils.Optional<SneakerGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SneakerCountArgs<ExtArgs>,
+            result: $Utils.Optional<SneakerCountAggregateOutputType> | number
+          }
+        }
+      }
+    }
+  } & {
+    other: {
+      payload: any
+      operations: {
+        $executeRawUnsafe: {
+          args: [query: string, ...values: any[]],
+          result: any
+        }
+        $executeRaw: {
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
+          result: any
+        }
+        $queryRawUnsafe: {
+          args: [query: string, ...values: any[]],
+          result: any
+        }
+        $queryRaw: {
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
+          result: any
+        }
+      }
+    }
+  }
+  export const defineExtension: $Extensions.ExtendsHook<'define', Prisma.TypeMapCb, $Extensions.DefaultArgs>
+  export type DefaultPrismaClient = PrismaClient
+  export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
   export interface PrismaClientOptions {
-    /**
-     * Configure findUnique/findFirst to throw an error if the query returns null. 
-     * @deprecated since 4.0.0. Use `findUniqueOrThrow`/`findFirstOrThrow` methods instead.
-     * @example
-     * ```
-     * // Reject on both findUnique/findFirst
-     * rejectOnNotFound: true
-     * // Reject only on findFirst with a custom error
-     * rejectOnNotFound: { findFirst: (err) => new Error("Custom Error")}
-     * // Reject on user.findUnique with a custom error
-     * rejectOnNotFound: { findUnique: {User: (err) => new Error("User not found")}}
-     * ```
-     */
-    rejectOnNotFound?: RejectOnNotFound | RejectPerOperation
     /**
      * Overwrites the datasource url from your schema.prisma file
      */
     datasources?: Datasources
-
+    /**
+     * Overwrites the datasource url from your schema.prisma file
+     */
+    datasourceUrl?: string
     /**
      * @default "colorless"
      */
     errorFormat?: ErrorFormat
-
     /**
      * @example
      * ```
@@ -718,15 +837,15 @@ export namespace Prisma {
      * 
      * // Emit as events
      * log: [
-     *  { emit: 'stdout', level: 'query' },
-     *  { emit: 'stdout', level: 'info' },
-     *  { emit: 'stdout', level: 'warn' }
-     *  { emit: 'stdout', level: 'error' }
+     *   { emit: 'stdout', level: 'query' },
+     *   { emit: 'stdout', level: 'info' },
+     *   { emit: 'stdout', level: 'warn' }
+     *   { emit: 'stdout', level: 'error' }
      * ]
      * ```
      * Read more in our [docs](https://www.prisma.io/docs/reference/tools-and-interfaces/prisma-client/logging#the-log-option).
      */
-    log?: Array<LogLevel | LogDefinition>
+    log?: (LogLevel | LogDefinition)[]
   }
 
   /* Types for Logging */
@@ -759,8 +878,10 @@ export namespace Prisma {
 
   export type PrismaAction =
     | 'findUnique'
+    | 'findUniqueOrThrow'
     | 'findMany'
     | 'findFirst'
+    | 'findFirstOrThrow'
     | 'create'
     | 'createMany'
     | 'update'
@@ -774,6 +895,7 @@ export namespace Prisma {
     | 'count'
     | 'runCommandRaw'
     | 'findRaw'
+    | 'groupBy'
 
   /**
    * These options are being passed into the middleware as "params"
@@ -791,8 +913,8 @@ export namespace Prisma {
    */
   export type Middleware<T = any> = (
     params: MiddlewareParams,
-    next: (params: MiddlewareParams) => Promise<T>,
-  ) => Promise<T>
+    next: (params: MiddlewareParams) => $Utils.JsPromise<T>,
+  ) => $Utils.JsPromise<T>
 
   // tested in getLogLevel.test.ts
   export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
@@ -800,7 +922,7 @@ export namespace Prisma {
   /**
    * `PrismaClient` proxy available in interactive transactions.
    */
-  export type TransactionClient = Omit<Prisma.DefaultPrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'>
+  export type TransactionClient = Omit<Prisma.DefaultPrismaClient, runtime.ITXClientDenyList>
 
   export type Datasource = {
     url?: string
@@ -815,41 +937,32 @@ export namespace Prisma {
    * Count Type SneakerCountOutputType
    */
 
-
   export type SneakerCountOutputType = {
     images: number
   }
 
-  export type SneakerCountOutputTypeSelect = {
-    images?: boolean
+  export type SneakerCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    images?: boolean | SneakerCountOutputTypeCountImagesArgs
   }
-
-  export type SneakerCountOutputTypeGetPayload<S extends boolean | null | undefined | SneakerCountOutputTypeArgs> =
-    S extends { select: any, include: any } ? 'Please either choose `select` or `include`' :
-    S extends true ? SneakerCountOutputType :
-    S extends undefined ? never :
-    S extends { include: any } & (SneakerCountOutputTypeArgs)
-    ? SneakerCountOutputType 
-    : S extends { select: any } & (SneakerCountOutputTypeArgs)
-      ? {
-    [P in TruthyKeys<S['select']>]:
-    P extends keyof SneakerCountOutputType ? SneakerCountOutputType[P] : never
-  } 
-      : SneakerCountOutputType
-
-
-
 
   // Custom InputTypes
 
   /**
    * SneakerCountOutputType without action
    */
-  export type SneakerCountOutputTypeArgs = {
+  export type SneakerCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerCountOutputType
      */
-    select?: SneakerCountOutputTypeSelect | null
+    select?: SneakerCountOutputTypeSelect<ExtArgs> | null
+  }
+
+
+  /**
+   * SneakerCountOutputType without action
+   */
+  export type SneakerCountOutputTypeCountImagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SneakerImageWhereInput
   }
 
 
@@ -861,7 +974,6 @@ export namespace Prisma {
   /**
    * Model SneakerImage
    */
-
 
   export type AggregateSneakerImage = {
     _count: SneakerImageCountAggregateOutputType | null
@@ -920,7 +1032,7 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type SneakerImageAggregateArgs = {
+  export type SneakerImageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which SneakerImage to aggregate.
      */
@@ -930,7 +1042,7 @@ export namespace Prisma {
      * 
      * Determine the order of SneakerImages to fetch.
      */
-    orderBy?: Enumerable<SneakerImageOrderByWithRelationInput>
+    orderBy?: SneakerImageOrderByWithRelationInput | SneakerImageOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -980,10 +1092,10 @@ export namespace Prisma {
 
 
 
-  export type SneakerImageGroupByArgs = {
+  export type SneakerImageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SneakerImageWhereInput
-    orderBy?: Enumerable<SneakerImageOrderByWithAggregationInput>
-    by: SneakerImageScalarFieldEnum[]
+    orderBy?: SneakerImageOrderByWithAggregationInput | SneakerImageOrderByWithAggregationInput[]
+    by: SneakerImageScalarFieldEnum[] | SneakerImageScalarFieldEnum
     having?: SneakerImageScalarWhereWithAggregatesInput
     take?: number
     skip?: number
@@ -991,7 +1103,6 @@ export namespace Prisma {
     _min?: SneakerImageMinAggregateInputType
     _max?: SneakerImageMaxAggregateInputType
   }
-
 
   export type SneakerImageGroupByOutputType = {
     id: string
@@ -1006,7 +1117,7 @@ export namespace Prisma {
 
   type GetSneakerImageGroupByPayload<T extends SneakerImageGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickArray<SneakerImageGroupByOutputType, T['by']> &
+      PickEnumerable<SneakerImageGroupByOutputType, T['by']> &
         {
           [P in ((keyof T) & (keyof SneakerImageGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
@@ -1018,44 +1129,53 @@ export namespace Prisma {
     >
 
 
-  export type SneakerImageSelect = {
+  export type SneakerImageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     url?: boolean
     sneakerId?: boolean
-    sneaker?: boolean | SneakerArgs
+    sneaker?: boolean | SneakerDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sneakerImage"]>
+
+  export type SneakerImageSelectScalar = {
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    url?: boolean
+    sneakerId?: boolean
+  }
+
+  export type SneakerImageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    sneaker?: boolean | SneakerDefaultArgs<ExtArgs>
   }
 
 
-  export type SneakerImageInclude = {
-    sneaker?: boolean | SneakerArgs
+  export type $SneakerImagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SneakerImage"
+    objects: {
+      sneaker: Prisma.$SneakerPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      createdAt: Date
+      updatedAt: Date
+      url: string
+      sneakerId: string
+    }, ExtArgs["result"]["sneakerImage"]>
+    composites: {}
   }
 
-  export type SneakerImageGetPayload<S extends boolean | null | undefined | SneakerImageArgs> =
-    S extends { select: any, include: any } ? 'Please either choose `select` or `include`' :
-    S extends true ? SneakerImage :
-    S extends undefined ? never :
-    S extends { include: any } & (SneakerImageArgs | SneakerImageFindManyArgs)
-    ? SneakerImage  & {
-    [P in TruthyKeys<S['include']>]:
-        P extends 'sneaker' ? SneakerGetPayload<S['include'][P]> :  never
-  } 
-    : S extends { select: any } & (SneakerImageArgs | SneakerImageFindManyArgs)
-      ? {
-    [P in TruthyKeys<S['select']>]:
-        P extends 'sneaker' ? SneakerGetPayload<S['select'][P]> :  P extends keyof SneakerImage ? SneakerImage[P] : never
-  } 
-      : SneakerImage
 
+  type SneakerImageGetPayload<S extends boolean | null | undefined | SneakerImageDefaultArgs> = $Result.GetResult<Prisma.$SneakerImagePayload, S>
 
-  type SneakerImageCountArgs = 
-    Omit<SneakerImageFindManyArgs, 'select' | 'include'> & {
+  type SneakerImageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SneakerImageFindManyArgs, 'select' | 'include' | 'distinct' > & {
       select?: SneakerImageCountAggregateInputType | true
     }
 
-  export interface SneakerImageDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined> {
-
+  export interface SneakerImageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SneakerImage'], meta: { name: 'SneakerImage' } }
     /**
      * Find zero or one SneakerImage that matches the filter.
      * @param {SneakerImageFindUniqueArgs} args - Arguments to find a SneakerImage
@@ -1067,9 +1187,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findUnique<T extends SneakerImageFindUniqueArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args: SelectSubset<T, SneakerImageFindUniqueArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'SneakerImage'> extends True ? Prisma__SneakerImageClient<SneakerImageGetPayload<T>> : Prisma__SneakerImageClient<SneakerImageGetPayload<T> | null, null>
+    findUnique<T extends SneakerImageFindUniqueArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageFindUniqueArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
 
     /**
      * Find one SneakerImage that matches the filter or throw an error  with `error.code='P2025'` 
@@ -1083,9 +1203,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findUniqueOrThrow<T extends SneakerImageFindUniqueOrThrowArgs>(
-      args?: SelectSubset<T, SneakerImageFindUniqueOrThrowArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    findUniqueOrThrow<T extends SneakerImageFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
 
     /**
      * Find the first SneakerImage that matches the filter.
@@ -1100,13 +1220,13 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findFirst<T extends SneakerImageFindFirstArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args?: SelectSubset<T, SneakerImageFindFirstArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'SneakerImage'> extends True ? Prisma__SneakerImageClient<SneakerImageGetPayload<T>> : Prisma__SneakerImageClient<SneakerImageGetPayload<T> | null, null>
+    findFirst<T extends SneakerImageFindFirstArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageFindFirstArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
 
     /**
      * Find the first SneakerImage that matches the filter or
-     * throw `NotFoundError` if no matches were found.
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
      * @param {SneakerImageFindFirstOrThrowArgs} args - Arguments to find a SneakerImage
@@ -1118,9 +1238,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findFirstOrThrow<T extends SneakerImageFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, SneakerImageFindFirstOrThrowArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    findFirstOrThrow<T extends SneakerImageFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
 
     /**
      * Find zero or more SneakerImages that matches the filter.
@@ -1138,9 +1258,9 @@ export namespace Prisma {
      * const sneakerImageWithIdOnly = await prisma.sneakerImage.findMany({ select: { id: true } })
      * 
     **/
-    findMany<T extends SneakerImageFindManyArgs>(
-      args?: SelectSubset<T, SneakerImageFindManyArgs>
-    ): Prisma.PrismaPromise<Array<SneakerImageGetPayload<T>>>
+    findMany<T extends SneakerImageFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findMany'>>
 
     /**
      * Create a SneakerImage.
@@ -1154,9 +1274,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    create<T extends SneakerImageCreateArgs>(
-      args: SelectSubset<T, SneakerImageCreateArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    create<T extends SneakerImageCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageCreateArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'create'>, never, ExtArgs>
 
     /**
      * Create many SneakerImages.
@@ -1170,8 +1290,8 @@ export namespace Prisma {
      *     })
      *     
     **/
-    createMany<T extends SneakerImageCreateManyArgs>(
-      args?: SelectSubset<T, SneakerImageCreateManyArgs>
+    createMany<T extends SneakerImageCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -1186,9 +1306,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    delete<T extends SneakerImageDeleteArgs>(
-      args: SelectSubset<T, SneakerImageDeleteArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    delete<T extends SneakerImageDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageDeleteArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
 
     /**
      * Update one SneakerImage.
@@ -1205,9 +1325,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    update<T extends SneakerImageUpdateArgs>(
-      args: SelectSubset<T, SneakerImageUpdateArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    update<T extends SneakerImageUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageUpdateArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'update'>, never, ExtArgs>
 
     /**
      * Delete zero or more SneakerImages.
@@ -1221,8 +1341,8 @@ export namespace Prisma {
      * })
      * 
     **/
-    deleteMany<T extends SneakerImageDeleteManyArgs>(
-      args?: SelectSubset<T, SneakerImageDeleteManyArgs>
+    deleteMany<T extends SneakerImageDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerImageDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -1242,8 +1362,8 @@ export namespace Prisma {
      * })
      * 
     **/
-    updateMany<T extends SneakerImageUpdateManyArgs>(
-      args: SelectSubset<T, SneakerImageUpdateManyArgs>
+    updateMany<T extends SneakerImageUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -1263,9 +1383,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    upsert<T extends SneakerImageUpsertArgs>(
-      args: SelectSubset<T, SneakerImageUpsertArgs>
-    ): Prisma__SneakerImageClient<SneakerImageGetPayload<T>>
+    upsert<T extends SneakerImageUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerImageUpsertArgs<ExtArgs>>
+    ): Prisma__SneakerImageClient<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
 
     /**
      * Count the number of SneakerImages.
@@ -1283,7 +1403,7 @@ export namespace Prisma {
     count<T extends SneakerImageCountArgs>(
       args?: Subset<T, SneakerImageCountArgs>,
     ): Prisma.PrismaPromise<
-      T extends _Record<'select', any>
+      T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
           : GetScalarType<T['select'], SneakerImageCountAggregateOutputType>
@@ -1344,7 +1464,7 @@ export namespace Prisma {
         ? { orderBy: SneakerImageGroupByArgs['orderBy'] }
         : { orderBy?: SneakerImageGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends TupleToUnion<T['by']>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
       HavingFields extends GetHavingFields<T['having']>,
       HavingValid extends Has<ByFields, HavingFields>,
@@ -1392,7 +1512,10 @@ export namespace Prisma {
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
     >(args: SubsetIntersection<T, SneakerImageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSneakerImageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-
+  /**
+   * Fields of the SneakerImage model
+   */
+  readonly fields: SneakerImageFieldRefs;
   }
 
   /**
@@ -1401,92 +1524,80 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export class Prisma__SneakerImageClient<T, Null = never> implements Prisma.PrismaPromise<T> {
-    private readonly _dmmf;
-    private readonly _queryType;
-    private readonly _rootField;
-    private readonly _clientMethod;
-    private readonly _args;
-    private readonly _dataPath;
-    private readonly _errorFormat;
-    private readonly _measurePerformance?;
-    private _isList;
-    private _callsite;
-    private _requestPromise?;
+  export interface Prisma__SneakerImageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
-    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
 
-    sneaker<T extends SneakerArgs= {}>(args?: Subset<T, SneakerArgs>): Prisma__SneakerClient<SneakerGetPayload<T> | Null>;
+    sneaker<T extends SneakerDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SneakerDefaultArgs<ExtArgs>>): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findUniqueOrThrow'> | Null, Null, ExtArgs>;
 
-    private get _document();
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
 
 
+
+  /**
+   * Fields of the SneakerImage model
+   */ 
+  interface SneakerImageFieldRefs {
+    readonly id: FieldRef<"SneakerImage", 'String'>
+    readonly createdAt: FieldRef<"SneakerImage", 'DateTime'>
+    readonly updatedAt: FieldRef<"SneakerImage", 'DateTime'>
+    readonly url: FieldRef<"SneakerImage", 'String'>
+    readonly sneakerId: FieldRef<"SneakerImage", 'String'>
+  }
+    
 
   // Custom InputTypes
 
   /**
-   * SneakerImage base type for findUnique actions
+   * SneakerImage findUnique
    */
-  export type SneakerImageFindUniqueArgsBase = {
+  export type SneakerImageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter, which SneakerImage to fetch.
      */
     where: SneakerImageWhereUniqueInput
   }
 
-  /**
-   * SneakerImage findUnique
-   */
-  export interface SneakerImageFindUniqueArgs extends SneakerImageFindUniqueArgsBase {
-   /**
-    * Throw an Error if query returns no results
-    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
-    */
-    rejectOnNotFound?: RejectOnNotFound
-  }
-      
 
   /**
    * SneakerImage findUniqueOrThrow
    */
-  export type SneakerImageFindUniqueOrThrowArgs = {
+  export type SneakerImageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter, which SneakerImage to fetch.
      */
@@ -1495,17 +1606,17 @@ export namespace Prisma {
 
 
   /**
-   * SneakerImage base type for findFirst actions
+   * SneakerImage findFirst
    */
-  export type SneakerImageFindFirstArgsBase = {
+  export type SneakerImageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter, which SneakerImage to fetch.
      */
@@ -1515,7 +1626,7 @@ export namespace Prisma {
      * 
      * Determine the order of SneakerImages to fetch.
      */
-    orderBy?: Enumerable<SneakerImageOrderByWithRelationInput>
+    orderBy?: SneakerImageOrderByWithRelationInput | SneakerImageOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -1539,33 +1650,22 @@ export namespace Prisma {
      * 
      * Filter by unique combinations of SneakerImages.
      */
-    distinct?: Enumerable<SneakerImageScalarFieldEnum>
+    distinct?: SneakerImageScalarFieldEnum | SneakerImageScalarFieldEnum[]
   }
 
-  /**
-   * SneakerImage findFirst
-   */
-  export interface SneakerImageFindFirstArgs extends SneakerImageFindFirstArgsBase {
-   /**
-    * Throw an Error if query returns no results
-    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
-    */
-    rejectOnNotFound?: RejectOnNotFound
-  }
-      
 
   /**
    * SneakerImage findFirstOrThrow
    */
-  export type SneakerImageFindFirstOrThrowArgs = {
+  export type SneakerImageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter, which SneakerImage to fetch.
      */
@@ -1575,7 +1675,7 @@ export namespace Prisma {
      * 
      * Determine the order of SneakerImages to fetch.
      */
-    orderBy?: Enumerable<SneakerImageOrderByWithRelationInput>
+    orderBy?: SneakerImageOrderByWithRelationInput | SneakerImageOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -1599,22 +1699,22 @@ export namespace Prisma {
      * 
      * Filter by unique combinations of SneakerImages.
      */
-    distinct?: Enumerable<SneakerImageScalarFieldEnum>
+    distinct?: SneakerImageScalarFieldEnum | SneakerImageScalarFieldEnum[]
   }
 
 
   /**
    * SneakerImage findMany
    */
-  export type SneakerImageFindManyArgs = {
+  export type SneakerImageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter, which SneakerImages to fetch.
      */
@@ -1624,7 +1724,7 @@ export namespace Prisma {
      * 
      * Determine the order of SneakerImages to fetch.
      */
-    orderBy?: Enumerable<SneakerImageOrderByWithRelationInput>
+    orderBy?: SneakerImageOrderByWithRelationInput | SneakerImageOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -1643,22 +1743,22 @@ export namespace Prisma {
      * Skip the first `n` SneakerImages.
      */
     skip?: number
-    distinct?: Enumerable<SneakerImageScalarFieldEnum>
+    distinct?: SneakerImageScalarFieldEnum | SneakerImageScalarFieldEnum[]
   }
 
 
   /**
    * SneakerImage create
    */
-  export type SneakerImageCreateArgs = {
+  export type SneakerImageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * The data needed to create a SneakerImage.
      */
@@ -1669,11 +1769,11 @@ export namespace Prisma {
   /**
    * SneakerImage createMany
    */
-  export type SneakerImageCreateManyArgs = {
+  export type SneakerImageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to create many SneakerImages.
      */
-    data: Enumerable<SneakerImageCreateManyInput>
+    data: SneakerImageCreateManyInput | SneakerImageCreateManyInput[]
     skipDuplicates?: boolean
   }
 
@@ -1681,15 +1781,15 @@ export namespace Prisma {
   /**
    * SneakerImage update
    */
-  export type SneakerImageUpdateArgs = {
+  export type SneakerImageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * The data needed to update a SneakerImage.
      */
@@ -1704,7 +1804,7 @@ export namespace Prisma {
   /**
    * SneakerImage updateMany
    */
-  export type SneakerImageUpdateManyArgs = {
+  export type SneakerImageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to update SneakerImages.
      */
@@ -1719,15 +1819,15 @@ export namespace Prisma {
   /**
    * SneakerImage upsert
    */
-  export type SneakerImageUpsertArgs = {
+  export type SneakerImageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * The filter to search for the SneakerImage to update in case it exists.
      */
@@ -1746,15 +1846,15 @@ export namespace Prisma {
   /**
    * SneakerImage delete
    */
-  export type SneakerImageDeleteArgs = {
+  export type SneakerImageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     /**
      * Filter which SneakerImage to delete.
      */
@@ -1765,7 +1865,7 @@ export namespace Prisma {
   /**
    * SneakerImage deleteMany
    */
-  export type SneakerImageDeleteManyArgs = {
+  export type SneakerImageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which SneakerImages to delete
      */
@@ -1776,15 +1876,15 @@ export namespace Prisma {
   /**
    * SneakerImage without action
    */
-  export type SneakerImageArgs = {
+  export type SneakerImageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
   }
 
 
@@ -1792,7 +1892,6 @@ export namespace Prisma {
   /**
    * Model Sneaker
    */
-
 
   export type AggregateSneaker = {
     _count: SneakerCountAggregateOutputType | null
@@ -1810,7 +1909,7 @@ export namespace Prisma {
 
   export type SneakerSumAggregateOutputType = {
     retailPrice: number | null
-    sizes: number[] | null
+    sizes: number[]
     quantity: number | null
   }
 
@@ -1915,7 +2014,7 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type SneakerAggregateArgs = {
+  export type SneakerAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which Sneaker to aggregate.
      */
@@ -1925,7 +2024,7 @@ export namespace Prisma {
      * 
      * Determine the order of Sneakers to fetch.
      */
-    orderBy?: Enumerable<SneakerOrderByWithRelationInput>
+    orderBy?: SneakerOrderByWithRelationInput | SneakerOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -1987,10 +2086,10 @@ export namespace Prisma {
 
 
 
-  export type SneakerGroupByArgs = {
+  export type SneakerGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SneakerWhereInput
-    orderBy?: Enumerable<SneakerOrderByWithAggregationInput>
-    by: SneakerScalarFieldEnum[]
+    orderBy?: SneakerOrderByWithAggregationInput | SneakerOrderByWithAggregationInput[]
+    by: SneakerScalarFieldEnum[] | SneakerScalarFieldEnum
     having?: SneakerScalarWhereWithAggregatesInput
     take?: number
     skip?: number
@@ -2000,7 +2099,6 @@ export namespace Prisma {
     _min?: SneakerMinAggregateInputType
     _max?: SneakerMaxAggregateInputType
   }
-
 
   export type SneakerGroupByOutputType = {
     id: string
@@ -2024,7 +2122,7 @@ export namespace Prisma {
 
   type GetSneakerGroupByPayload<T extends SneakerGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickArray<SneakerGroupByOutputType, T['by']> &
+      PickEnumerable<SneakerGroupByOutputType, T['by']> &
         {
           [P in ((keyof T) & (keyof SneakerGroupByOutputType))]: P extends '_count'
             ? T[P] extends boolean
@@ -2036,7 +2134,7 @@ export namespace Prisma {
     >
 
 
-  export type SneakerSelect = {
+  export type SneakerSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2049,42 +2147,63 @@ export namespace Prisma {
     silhouette?: boolean
     sizes?: boolean
     quantity?: boolean
-    images?: boolean | Sneaker$imagesArgs
-    _count?: boolean | SneakerCountOutputTypeArgs
+    images?: boolean | Sneaker$imagesArgs<ExtArgs>
+    _count?: boolean | SneakerCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["sneaker"]>
+
+  export type SneakerSelectScalar = {
+    id?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    name?: boolean
+    description?: boolean
+    brand?: boolean
+    colorway?: boolean
+    releaseDate?: boolean
+    retailPrice?: boolean
+    silhouette?: boolean
+    sizes?: boolean
+    quantity?: boolean
+  }
+
+  export type SneakerInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    images?: boolean | Sneaker$imagesArgs<ExtArgs>
+    _count?: boolean | SneakerCountOutputTypeDefaultArgs<ExtArgs>
   }
 
 
-  export type SneakerInclude = {
-    images?: boolean | Sneaker$imagesArgs
-    _count?: boolean | SneakerCountOutputTypeArgs
+  export type $SneakerPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Sneaker"
+    objects: {
+      images: Prisma.$SneakerImagePayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      createdAt: Date
+      updatedAt: Date
+      name: string
+      description: string
+      brand: string
+      colorway: string
+      releaseDate: Date
+      retailPrice: number
+      silhouette: string
+      sizes: number[]
+      quantity: number
+    }, ExtArgs["result"]["sneaker"]>
+    composites: {}
   }
 
-  export type SneakerGetPayload<S extends boolean | null | undefined | SneakerArgs> =
-    S extends { select: any, include: any } ? 'Please either choose `select` or `include`' :
-    S extends true ? Sneaker :
-    S extends undefined ? never :
-    S extends { include: any } & (SneakerArgs | SneakerFindManyArgs)
-    ? Sneaker  & {
-    [P in TruthyKeys<S['include']>]:
-        P extends 'images' ? Array < SneakerImageGetPayload<S['include'][P]>>  :
-        P extends '_count' ? SneakerCountOutputTypeGetPayload<S['include'][P]> :  never
-  } 
-    : S extends { select: any } & (SneakerArgs | SneakerFindManyArgs)
-      ? {
-    [P in TruthyKeys<S['select']>]:
-        P extends 'images' ? Array < SneakerImageGetPayload<S['select'][P]>>  :
-        P extends '_count' ? SneakerCountOutputTypeGetPayload<S['select'][P]> :  P extends keyof Sneaker ? Sneaker[P] : never
-  } 
-      : Sneaker
 
+  type SneakerGetPayload<S extends boolean | null | undefined | SneakerDefaultArgs> = $Result.GetResult<Prisma.$SneakerPayload, S>
 
-  type SneakerCountArgs = 
-    Omit<SneakerFindManyArgs, 'select' | 'include'> & {
+  type SneakerCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<SneakerFindManyArgs, 'select' | 'include' | 'distinct' > & {
       select?: SneakerCountAggregateInputType | true
     }
 
-  export interface SneakerDelegate<GlobalRejectSettings extends Prisma.RejectOnNotFound | Prisma.RejectPerOperation | false | undefined> {
-
+  export interface SneakerDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Sneaker'], meta: { name: 'Sneaker' } }
     /**
      * Find zero or one Sneaker that matches the filter.
      * @param {SneakerFindUniqueArgs} args - Arguments to find a Sneaker
@@ -2096,9 +2215,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findUnique<T extends SneakerFindUniqueArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args: SelectSubset<T, SneakerFindUniqueArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findUnique', 'Sneaker'> extends True ? Prisma__SneakerClient<SneakerGetPayload<T>> : Prisma__SneakerClient<SneakerGetPayload<T> | null, null>
+    findUnique<T extends SneakerFindUniqueArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerFindUniqueArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findUnique'> | null, null, ExtArgs>
 
     /**
      * Find one Sneaker that matches the filter or throw an error  with `error.code='P2025'` 
@@ -2112,9 +2231,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findUniqueOrThrow<T extends SneakerFindUniqueOrThrowArgs>(
-      args?: SelectSubset<T, SneakerFindUniqueOrThrowArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    findUniqueOrThrow<T extends SneakerFindUniqueOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findUniqueOrThrow'>, never, ExtArgs>
 
     /**
      * Find the first Sneaker that matches the filter.
@@ -2129,13 +2248,13 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findFirst<T extends SneakerFindFirstArgs,  LocalRejectSettings = T["rejectOnNotFound"] extends RejectOnNotFound ? T['rejectOnNotFound'] : undefined>(
-      args?: SelectSubset<T, SneakerFindFirstArgs>
-    ): HasReject<GlobalRejectSettings, LocalRejectSettings, 'findFirst', 'Sneaker'> extends True ? Prisma__SneakerClient<SneakerGetPayload<T>> : Prisma__SneakerClient<SneakerGetPayload<T> | null, null>
+    findFirst<T extends SneakerFindFirstArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerFindFirstArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findFirst'> | null, null, ExtArgs>
 
     /**
      * Find the first Sneaker that matches the filter or
-     * throw `NotFoundError` if no matches were found.
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
      * @param {SneakerFindFirstOrThrowArgs} args - Arguments to find a Sneaker
@@ -2147,9 +2266,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    findFirstOrThrow<T extends SneakerFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, SneakerFindFirstOrThrowArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    findFirstOrThrow<T extends SneakerFindFirstOrThrowArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findFirstOrThrow'>, never, ExtArgs>
 
     /**
      * Find zero or more Sneakers that matches the filter.
@@ -2167,9 +2286,9 @@ export namespace Prisma {
      * const sneakerWithIdOnly = await prisma.sneaker.findMany({ select: { id: true } })
      * 
     **/
-    findMany<T extends SneakerFindManyArgs>(
-      args?: SelectSubset<T, SneakerFindManyArgs>
-    ): Prisma.PrismaPromise<Array<SneakerGetPayload<T>>>
+    findMany<T extends SneakerFindManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'findMany'>>
 
     /**
      * Create a Sneaker.
@@ -2183,9 +2302,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    create<T extends SneakerCreateArgs>(
-      args: SelectSubset<T, SneakerCreateArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    create<T extends SneakerCreateArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerCreateArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'create'>, never, ExtArgs>
 
     /**
      * Create many Sneakers.
@@ -2199,8 +2318,8 @@ export namespace Prisma {
      *     })
      *     
     **/
-    createMany<T extends SneakerCreateManyArgs>(
-      args?: SelectSubset<T, SneakerCreateManyArgs>
+    createMany<T extends SneakerCreateManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -2215,9 +2334,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    delete<T extends SneakerDeleteArgs>(
-      args: SelectSubset<T, SneakerDeleteArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    delete<T extends SneakerDeleteArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerDeleteArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'delete'>, never, ExtArgs>
 
     /**
      * Update one Sneaker.
@@ -2234,9 +2353,9 @@ export namespace Prisma {
      * })
      * 
     **/
-    update<T extends SneakerUpdateArgs>(
-      args: SelectSubset<T, SneakerUpdateArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    update<T extends SneakerUpdateArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerUpdateArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'update'>, never, ExtArgs>
 
     /**
      * Delete zero or more Sneakers.
@@ -2250,8 +2369,8 @@ export namespace Prisma {
      * })
      * 
     **/
-    deleteMany<T extends SneakerDeleteManyArgs>(
-      args?: SelectSubset<T, SneakerDeleteManyArgs>
+    deleteMany<T extends SneakerDeleteManyArgs<ExtArgs>>(
+      args?: SelectSubset<T, SneakerDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -2271,8 +2390,8 @@ export namespace Prisma {
      * })
      * 
     **/
-    updateMany<T extends SneakerUpdateManyArgs>(
-      args: SelectSubset<T, SneakerUpdateManyArgs>
+    updateMany<T extends SneakerUpdateManyArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>
 
     /**
@@ -2292,9 +2411,9 @@ export namespace Prisma {
      *   }
      * })
     **/
-    upsert<T extends SneakerUpsertArgs>(
-      args: SelectSubset<T, SneakerUpsertArgs>
-    ): Prisma__SneakerClient<SneakerGetPayload<T>>
+    upsert<T extends SneakerUpsertArgs<ExtArgs>>(
+      args: SelectSubset<T, SneakerUpsertArgs<ExtArgs>>
+    ): Prisma__SneakerClient<$Result.GetResult<Prisma.$SneakerPayload<ExtArgs>, T, 'upsert'>, never, ExtArgs>
 
     /**
      * Count the number of Sneakers.
@@ -2312,7 +2431,7 @@ export namespace Prisma {
     count<T extends SneakerCountArgs>(
       args?: Subset<T, SneakerCountArgs>,
     ): Prisma.PrismaPromise<
-      T extends _Record<'select', any>
+      T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
           : GetScalarType<T['select'], SneakerCountAggregateOutputType>
@@ -2373,7 +2492,7 @@ export namespace Prisma {
         ? { orderBy: SneakerGroupByArgs['orderBy'] }
         : { orderBy?: SneakerGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends TupleToUnion<T['by']>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
       HavingFields extends GetHavingFields<T['having']>,
       HavingValid extends Has<ByFields, HavingFields>,
@@ -2421,7 +2540,10 @@ export namespace Prisma {
             : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
         }[OrderFields]
     >(args: SubsetIntersection<T, SneakerGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSneakerGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-
+  /**
+   * Fields of the Sneaker model
+   */
+  readonly fields: SneakerFieldRefs;
   }
 
   /**
@@ -2430,92 +2552,87 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export class Prisma__SneakerClient<T, Null = never> implements Prisma.PrismaPromise<T> {
-    private readonly _dmmf;
-    private readonly _queryType;
-    private readonly _rootField;
-    private readonly _clientMethod;
-    private readonly _args;
-    private readonly _dataPath;
-    private readonly _errorFormat;
-    private readonly _measurePerformance?;
-    private _isList;
-    private _callsite;
-    private _requestPromise?;
+  export interface Prisma__SneakerClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
-    constructor(_dmmf: runtime.DMMFClass, _queryType: 'query' | 'mutation', _rootField: string, _clientMethod: string, _args: any, _dataPath: string[], _errorFormat: ErrorFormat, _measurePerformance?: boolean | undefined, _isList?: boolean);
 
-    images<T extends Sneaker$imagesArgs= {}>(args?: Subset<T, Sneaker$imagesArgs>): Prisma.PrismaPromise<Array<SneakerImageGetPayload<T>>| Null>;
+    images<T extends Sneaker$imagesArgs<ExtArgs> = {}>(args?: Subset<T, Sneaker$imagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SneakerImagePayload<ExtArgs>, T, 'findMany'> | Null>;
 
-    private get _document();
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2>;
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>;
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult>;
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>;
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
      * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
      * @returns A Promise for the completion of the callback.
      */
-    finally(onfinally?: (() => void) | undefined | null): Promise<T>;
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
 
 
+
+  /**
+   * Fields of the Sneaker model
+   */ 
+  interface SneakerFieldRefs {
+    readonly id: FieldRef<"Sneaker", 'String'>
+    readonly createdAt: FieldRef<"Sneaker", 'DateTime'>
+    readonly updatedAt: FieldRef<"Sneaker", 'DateTime'>
+    readonly name: FieldRef<"Sneaker", 'String'>
+    readonly description: FieldRef<"Sneaker", 'String'>
+    readonly brand: FieldRef<"Sneaker", 'String'>
+    readonly colorway: FieldRef<"Sneaker", 'String'>
+    readonly releaseDate: FieldRef<"Sneaker", 'DateTime'>
+    readonly retailPrice: FieldRef<"Sneaker", 'Float'>
+    readonly silhouette: FieldRef<"Sneaker", 'String'>
+    readonly sizes: FieldRef<"Sneaker", 'Float[]'>
+    readonly quantity: FieldRef<"Sneaker", 'Float'>
+  }
+    
 
   // Custom InputTypes
 
   /**
-   * Sneaker base type for findUnique actions
+   * Sneaker findUnique
    */
-  export type SneakerFindUniqueArgsBase = {
+  export type SneakerFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter, which Sneaker to fetch.
      */
     where: SneakerWhereUniqueInput
   }
 
-  /**
-   * Sneaker findUnique
-   */
-  export interface SneakerFindUniqueArgs extends SneakerFindUniqueArgsBase {
-   /**
-    * Throw an Error if query returns no results
-    * @deprecated since 4.0.0: use `findUniqueOrThrow` method instead
-    */
-    rejectOnNotFound?: RejectOnNotFound
-  }
-      
 
   /**
    * Sneaker findUniqueOrThrow
    */
-  export type SneakerFindUniqueOrThrowArgs = {
+  export type SneakerFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter, which Sneaker to fetch.
      */
@@ -2524,17 +2641,17 @@ export namespace Prisma {
 
 
   /**
-   * Sneaker base type for findFirst actions
+   * Sneaker findFirst
    */
-  export type SneakerFindFirstArgsBase = {
+  export type SneakerFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter, which Sneaker to fetch.
      */
@@ -2544,7 +2661,7 @@ export namespace Prisma {
      * 
      * Determine the order of Sneakers to fetch.
      */
-    orderBy?: Enumerable<SneakerOrderByWithRelationInput>
+    orderBy?: SneakerOrderByWithRelationInput | SneakerOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -2568,33 +2685,22 @@ export namespace Prisma {
      * 
      * Filter by unique combinations of Sneakers.
      */
-    distinct?: Enumerable<SneakerScalarFieldEnum>
+    distinct?: SneakerScalarFieldEnum | SneakerScalarFieldEnum[]
   }
 
-  /**
-   * Sneaker findFirst
-   */
-  export interface SneakerFindFirstArgs extends SneakerFindFirstArgsBase {
-   /**
-    * Throw an Error if query returns no results
-    * @deprecated since 4.0.0: use `findFirstOrThrow` method instead
-    */
-    rejectOnNotFound?: RejectOnNotFound
-  }
-      
 
   /**
    * Sneaker findFirstOrThrow
    */
-  export type SneakerFindFirstOrThrowArgs = {
+  export type SneakerFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter, which Sneaker to fetch.
      */
@@ -2604,7 +2710,7 @@ export namespace Prisma {
      * 
      * Determine the order of Sneakers to fetch.
      */
-    orderBy?: Enumerable<SneakerOrderByWithRelationInput>
+    orderBy?: SneakerOrderByWithRelationInput | SneakerOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -2628,22 +2734,22 @@ export namespace Prisma {
      * 
      * Filter by unique combinations of Sneakers.
      */
-    distinct?: Enumerable<SneakerScalarFieldEnum>
+    distinct?: SneakerScalarFieldEnum | SneakerScalarFieldEnum[]
   }
 
 
   /**
    * Sneaker findMany
    */
-  export type SneakerFindManyArgs = {
+  export type SneakerFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter, which Sneakers to fetch.
      */
@@ -2653,7 +2759,7 @@ export namespace Prisma {
      * 
      * Determine the order of Sneakers to fetch.
      */
-    orderBy?: Enumerable<SneakerOrderByWithRelationInput>
+    orderBy?: SneakerOrderByWithRelationInput | SneakerOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
      * 
@@ -2672,22 +2778,22 @@ export namespace Prisma {
      * Skip the first `n` Sneakers.
      */
     skip?: number
-    distinct?: Enumerable<SneakerScalarFieldEnum>
+    distinct?: SneakerScalarFieldEnum | SneakerScalarFieldEnum[]
   }
 
 
   /**
    * Sneaker create
    */
-  export type SneakerCreateArgs = {
+  export type SneakerCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * The data needed to create a Sneaker.
      */
@@ -2698,11 +2804,11 @@ export namespace Prisma {
   /**
    * Sneaker createMany
    */
-  export type SneakerCreateManyArgs = {
+  export type SneakerCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to create many Sneakers.
      */
-    data: Enumerable<SneakerCreateManyInput>
+    data: SneakerCreateManyInput | SneakerCreateManyInput[]
     skipDuplicates?: boolean
   }
 
@@ -2710,15 +2816,15 @@ export namespace Prisma {
   /**
    * Sneaker update
    */
-  export type SneakerUpdateArgs = {
+  export type SneakerUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * The data needed to update a Sneaker.
      */
@@ -2733,7 +2839,7 @@ export namespace Prisma {
   /**
    * Sneaker updateMany
    */
-  export type SneakerUpdateManyArgs = {
+  export type SneakerUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to update Sneakers.
      */
@@ -2748,15 +2854,15 @@ export namespace Prisma {
   /**
    * Sneaker upsert
    */
-  export type SneakerUpsertArgs = {
+  export type SneakerUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * The filter to search for the Sneaker to update in case it exists.
      */
@@ -2775,15 +2881,15 @@ export namespace Prisma {
   /**
    * Sneaker delete
    */
-  export type SneakerDeleteArgs = {
+  export type SneakerDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
     /**
      * Filter which Sneaker to delete.
      */
@@ -2794,7 +2900,7 @@ export namespace Prisma {
   /**
    * Sneaker deleteMany
    */
-  export type SneakerDeleteManyArgs = {
+  export type SneakerDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which Sneakers to delete
      */
@@ -2805,36 +2911,36 @@ export namespace Prisma {
   /**
    * Sneaker.images
    */
-  export type Sneaker$imagesArgs = {
+  export type Sneaker$imagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SneakerImage
      */
-    select?: SneakerImageSelect | null
+    select?: SneakerImageSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerImageInclude | null
+    include?: SneakerImageInclude<ExtArgs> | null
     where?: SneakerImageWhereInput
-    orderBy?: Enumerable<SneakerImageOrderByWithRelationInput>
+    orderBy?: SneakerImageOrderByWithRelationInput | SneakerImageOrderByWithRelationInput[]
     cursor?: SneakerImageWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: Enumerable<SneakerImageScalarFieldEnum>
+    distinct?: SneakerImageScalarFieldEnum | SneakerImageScalarFieldEnum[]
   }
 
 
   /**
    * Sneaker without action
    */
-  export type SneakerArgs = {
+  export type SneakerDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Sneaker
      */
-    select?: SneakerSelect | null
+    select?: SneakerSelect<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well.
      */
-    include?: SneakerInclude | null
+    include?: SneakerInclude<ExtArgs> | null
   }
 
 
@@ -2843,15 +2949,14 @@ export namespace Prisma {
    * Enums
    */
 
-  // Based on
-  // https://github.com/microsoft/TypeScript/issues/3192#issuecomment-261720275
-
-  export const QueryMode: {
-    default: 'default',
-    insensitive: 'insensitive'
+  export const TransactionIsolationLevel: {
+    ReadUncommitted: 'ReadUncommitted',
+    ReadCommitted: 'ReadCommitted',
+    RepeatableRead: 'RepeatableRead',
+    Serializable: 'Serializable'
   };
 
-  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+  export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
   export const SneakerImageScalarFieldEnum: {
@@ -2891,30 +2996,87 @@ export namespace Prisma {
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
-  export const TransactionIsolationLevel: {
-    ReadUncommitted: 'ReadUncommitted',
-    ReadCommitted: 'ReadCommitted',
-    RepeatableRead: 'RepeatableRead',
-    Serializable: 'Serializable'
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
   };
 
-  export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+  /**
+   * Field references 
+   */
+
+
+  /**
+   * Reference to a field of type 'String'
+   */
+  export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
+
+  /**
+   * Reference to a field of type 'String[]'
+   */
+  export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime'
+   */
+  export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+  /**
+   * Reference to a field of type 'DateTime[]'
+   */
+  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
+  export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
   /**
    * Deep Input Types
    */
 
 
   export type SneakerImageWhereInput = {
-    AND?: Enumerable<SneakerImageWhereInput>
-    OR?: Enumerable<SneakerImageWhereInput>
-    NOT?: Enumerable<SneakerImageWhereInput>
-    id?: StringFilter | string
-    createdAt?: DateTimeFilter | Date | string
-    updatedAt?: DateTimeFilter | Date | string
-    url?: StringFilter | string
-    sneakerId?: StringFilter | string
+    AND?: SneakerImageWhereInput | SneakerImageWhereInput[]
+    OR?: SneakerImageWhereInput[]
+    NOT?: SneakerImageWhereInput | SneakerImageWhereInput[]
+    id?: StringFilter<"SneakerImage"> | string
+    createdAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    updatedAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    url?: StringFilter<"SneakerImage"> | string
+    sneakerId?: StringFilter<"SneakerImage"> | string
     sneaker?: XOR<SneakerRelationFilter, SneakerWhereInput>
   }
 
@@ -2927,9 +3089,17 @@ export namespace Prisma {
     sneaker?: SneakerOrderByWithRelationInput
   }
 
-  export type SneakerImageWhereUniqueInput = {
+  export type SneakerImageWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-  }
+    AND?: SneakerImageWhereInput | SneakerImageWhereInput[]
+    OR?: SneakerImageWhereInput[]
+    NOT?: SneakerImageWhereInput | SneakerImageWhereInput[]
+    createdAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    updatedAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    url?: StringFilter<"SneakerImage"> | string
+    sneakerId?: StringFilter<"SneakerImage"> | string
+    sneaker?: XOR<SneakerRelationFilter, SneakerWhereInput>
+  }, "id">
 
   export type SneakerImageOrderByWithAggregationInput = {
     id?: SortOrder
@@ -2943,32 +3113,32 @@ export namespace Prisma {
   }
 
   export type SneakerImageScalarWhereWithAggregatesInput = {
-    AND?: Enumerable<SneakerImageScalarWhereWithAggregatesInput>
-    OR?: Enumerable<SneakerImageScalarWhereWithAggregatesInput>
-    NOT?: Enumerable<SneakerImageScalarWhereWithAggregatesInput>
-    id?: StringWithAggregatesFilter | string
-    createdAt?: DateTimeWithAggregatesFilter | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter | Date | string
-    url?: StringWithAggregatesFilter | string
-    sneakerId?: StringWithAggregatesFilter | string
+    AND?: SneakerImageScalarWhereWithAggregatesInput | SneakerImageScalarWhereWithAggregatesInput[]
+    OR?: SneakerImageScalarWhereWithAggregatesInput[]
+    NOT?: SneakerImageScalarWhereWithAggregatesInput | SneakerImageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SneakerImage"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SneakerImage"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SneakerImage"> | Date | string
+    url?: StringWithAggregatesFilter<"SneakerImage"> | string
+    sneakerId?: StringWithAggregatesFilter<"SneakerImage"> | string
   }
 
   export type SneakerWhereInput = {
-    AND?: Enumerable<SneakerWhereInput>
-    OR?: Enumerable<SneakerWhereInput>
-    NOT?: Enumerable<SneakerWhereInput>
-    id?: StringFilter | string
-    createdAt?: DateTimeFilter | Date | string
-    updatedAt?: DateTimeFilter | Date | string
-    name?: StringFilter | string
-    description?: StringFilter | string
-    brand?: StringFilter | string
-    colorway?: StringFilter | string
-    releaseDate?: DateTimeFilter | Date | string
-    retailPrice?: FloatFilter | number
-    silhouette?: StringFilter | string
-    sizes?: FloatNullableListFilter
-    quantity?: FloatFilter | number
+    AND?: SneakerWhereInput | SneakerWhereInput[]
+    OR?: SneakerWhereInput[]
+    NOT?: SneakerWhereInput | SneakerWhereInput[]
+    id?: StringFilter<"Sneaker"> | string
+    createdAt?: DateTimeFilter<"Sneaker"> | Date | string
+    updatedAt?: DateTimeFilter<"Sneaker"> | Date | string
+    name?: StringFilter<"Sneaker"> | string
+    description?: StringFilter<"Sneaker"> | string
+    brand?: StringFilter<"Sneaker"> | string
+    colorway?: StringFilter<"Sneaker"> | string
+    releaseDate?: DateTimeFilter<"Sneaker"> | Date | string
+    retailPrice?: FloatFilter<"Sneaker"> | number
+    silhouette?: StringFilter<"Sneaker"> | string
+    sizes?: FloatNullableListFilter<"Sneaker">
+    quantity?: FloatFilter<"Sneaker"> | number
     images?: SneakerImageListRelationFilter
   }
 
@@ -2988,9 +3158,24 @@ export namespace Prisma {
     images?: SneakerImageOrderByRelationAggregateInput
   }
 
-  export type SneakerWhereUniqueInput = {
+  export type SneakerWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-  }
+    AND?: SneakerWhereInput | SneakerWhereInput[]
+    OR?: SneakerWhereInput[]
+    NOT?: SneakerWhereInput | SneakerWhereInput[]
+    createdAt?: DateTimeFilter<"Sneaker"> | Date | string
+    updatedAt?: DateTimeFilter<"Sneaker"> | Date | string
+    name?: StringFilter<"Sneaker"> | string
+    description?: StringFilter<"Sneaker"> | string
+    brand?: StringFilter<"Sneaker"> | string
+    colorway?: StringFilter<"Sneaker"> | string
+    releaseDate?: DateTimeFilter<"Sneaker"> | Date | string
+    retailPrice?: FloatFilter<"Sneaker"> | number
+    silhouette?: StringFilter<"Sneaker"> | string
+    sizes?: FloatNullableListFilter<"Sneaker">
+    quantity?: FloatFilter<"Sneaker"> | number
+    images?: SneakerImageListRelationFilter
+  }, "id">
 
   export type SneakerOrderByWithAggregationInput = {
     id?: SortOrder
@@ -3013,21 +3198,21 @@ export namespace Prisma {
   }
 
   export type SneakerScalarWhereWithAggregatesInput = {
-    AND?: Enumerable<SneakerScalarWhereWithAggregatesInput>
-    OR?: Enumerable<SneakerScalarWhereWithAggregatesInput>
-    NOT?: Enumerable<SneakerScalarWhereWithAggregatesInput>
-    id?: StringWithAggregatesFilter | string
-    createdAt?: DateTimeWithAggregatesFilter | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter | Date | string
-    name?: StringWithAggregatesFilter | string
-    description?: StringWithAggregatesFilter | string
-    brand?: StringWithAggregatesFilter | string
-    colorway?: StringWithAggregatesFilter | string
-    releaseDate?: DateTimeWithAggregatesFilter | Date | string
-    retailPrice?: FloatWithAggregatesFilter | number
-    silhouette?: StringWithAggregatesFilter | string
-    sizes?: FloatNullableListFilter
-    quantity?: FloatWithAggregatesFilter | number
+    AND?: SneakerScalarWhereWithAggregatesInput | SneakerScalarWhereWithAggregatesInput[]
+    OR?: SneakerScalarWhereWithAggregatesInput[]
+    NOT?: SneakerScalarWhereWithAggregatesInput | SneakerScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Sneaker"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Sneaker"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Sneaker"> | Date | string
+    name?: StringWithAggregatesFilter<"Sneaker"> | string
+    description?: StringWithAggregatesFilter<"Sneaker"> | string
+    brand?: StringWithAggregatesFilter<"Sneaker"> | string
+    colorway?: StringWithAggregatesFilter<"Sneaker"> | string
+    releaseDate?: DateTimeWithAggregatesFilter<"Sneaker"> | Date | string
+    retailPrice?: FloatWithAggregatesFilter<"Sneaker"> | number
+    silhouette?: StringWithAggregatesFilter<"Sneaker"> | string
+    sizes?: FloatNullableListFilter<"Sneaker">
+    quantity?: FloatWithAggregatesFilter<"Sneaker"> | number
   }
 
   export type SneakerImageCreateInput = {
@@ -3096,7 +3281,7 @@ export namespace Prisma {
     releaseDate: Date | string
     retailPrice: number
     silhouette: string
-    sizes?: SneakerCreatesizesInput | Enumerable<number>
+    sizes?: SneakerCreatesizesInput | number[]
     quantity: number
     images?: SneakerImageCreateNestedManyWithoutSneakerInput
   }
@@ -3112,7 +3297,7 @@ export namespace Prisma {
     releaseDate: Date | string
     retailPrice: number
     silhouette: string
-    sizes?: SneakerCreatesizesInput | Enumerable<number>
+    sizes?: SneakerCreatesizesInput | number[]
     quantity: number
     images?: SneakerImageUncheckedCreateNestedManyWithoutSneakerInput
   }
@@ -3128,7 +3313,7 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
     images?: SneakerImageUpdateManyWithoutSneakerNestedInput
   }
@@ -3144,7 +3329,7 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
     images?: SneakerImageUncheckedUpdateManyWithoutSneakerNestedInput
   }
@@ -3160,7 +3345,7 @@ export namespace Prisma {
     releaseDate: Date | string
     retailPrice: number
     silhouette: string
-    sizes?: SneakerCreatesizesInput | Enumerable<number>
+    sizes?: SneakerCreatesizesInput | number[]
     quantity: number
   }
 
@@ -3175,7 +3360,7 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
   }
 
@@ -3190,34 +3375,34 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
   }
 
-  export type StringFilter = {
-    equals?: string
-    in?: Enumerable<string>
-    notIn?: Enumerable<string>
-    lt?: string
-    lte?: string
-    gt?: string
-    gte?: string
-    contains?: string
-    startsWith?: string
-    endsWith?: string
+  export type StringFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
-    not?: NestedStringFilter | string
+    not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type DateTimeFilter = {
-    equals?: Date | string
-    in?: Enumerable<Date> | Enumerable<string>
-    notIn?: Enumerable<Date> | Enumerable<string>
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeFilter | Date | string
+  export type DateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
   export type SneakerRelationFilter = {
@@ -3249,54 +3434,54 @@ export namespace Prisma {
     sneakerId?: SortOrder
   }
 
-  export type StringWithAggregatesFilter = {
-    equals?: string
-    in?: Enumerable<string>
-    notIn?: Enumerable<string>
-    lt?: string
-    lte?: string
-    gt?: string
-    gte?: string
-    contains?: string
-    startsWith?: string
-    endsWith?: string
+  export type StringWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
     mode?: QueryMode
-    not?: NestedStringWithAggregatesFilter | string
-    _count?: NestedIntFilter
-    _min?: NestedStringFilter
-    _max?: NestedStringFilter
+    not?: NestedStringWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type DateTimeWithAggregatesFilter = {
-    equals?: Date | string
-    in?: Enumerable<Date> | Enumerable<string>
-    notIn?: Enumerable<Date> | Enumerable<string>
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeWithAggregatesFilter | Date | string
-    _count?: NestedIntFilter
-    _min?: NestedDateTimeFilter
-    _max?: NestedDateTimeFilter
+  export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type FloatFilter = {
-    equals?: number
-    in?: Enumerable<number>
-    notIn?: Enumerable<number>
-    lt?: number
-    lte?: number
-    gt?: number
-    gte?: number
-    not?: NestedFloatFilter | number
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type FloatNullableListFilter = {
-    equals?: Enumerable<number> | null
-    has?: number | null
-    hasEvery?: Enumerable<number>
-    hasSome?: Enumerable<number>
+  export type FloatNullableListFilter<$PrismaModel = never> = {
+    equals?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    has?: number | FloatFieldRefInput<$PrismaModel> | null
+    hasEvery?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    hasSome?: number[] | ListFloatFieldRefInput<$PrismaModel>
     isEmpty?: boolean
   }
 
@@ -3365,20 +3550,20 @@ export namespace Prisma {
     quantity?: SortOrder
   }
 
-  export type FloatWithAggregatesFilter = {
-    equals?: number
-    in?: Enumerable<number>
-    notIn?: Enumerable<number>
-    lt?: number
-    lte?: number
-    gt?: number
-    gte?: number
-    not?: NestedFloatWithAggregatesFilter | number
-    _count?: NestedIntFilter
-    _avg?: NestedFloatFilter
-    _sum?: NestedFloatFilter
-    _min?: NestedFloatFilter
-    _max?: NestedFloatFilter
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type SneakerCreateNestedOneWithoutImagesInput = {
@@ -3400,25 +3585,25 @@ export namespace Prisma {
     connectOrCreate?: SneakerCreateOrConnectWithoutImagesInput
     upsert?: SneakerUpsertWithoutImagesInput
     connect?: SneakerWhereUniqueInput
-    update?: XOR<SneakerUpdateWithoutImagesInput, SneakerUncheckedUpdateWithoutImagesInput>
+    update?: XOR<XOR<SneakerUpdateToOneWithWhereWithoutImagesInput, SneakerUpdateWithoutImagesInput>, SneakerUncheckedUpdateWithoutImagesInput>
   }
 
   export type SneakerCreatesizesInput = {
-    set: Enumerable<number>
+    set: number[]
   }
 
   export type SneakerImageCreateNestedManyWithoutSneakerInput = {
-    create?: XOR<Enumerable<SneakerImageCreateWithoutSneakerInput>, Enumerable<SneakerImageUncheckedCreateWithoutSneakerInput>>
-    connectOrCreate?: Enumerable<SneakerImageCreateOrConnectWithoutSneakerInput>
+    create?: XOR<SneakerImageCreateWithoutSneakerInput, SneakerImageUncheckedCreateWithoutSneakerInput> | SneakerImageCreateWithoutSneakerInput[] | SneakerImageUncheckedCreateWithoutSneakerInput[]
+    connectOrCreate?: SneakerImageCreateOrConnectWithoutSneakerInput | SneakerImageCreateOrConnectWithoutSneakerInput[]
     createMany?: SneakerImageCreateManySneakerInputEnvelope
-    connect?: Enumerable<SneakerImageWhereUniqueInput>
+    connect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
   }
 
   export type SneakerImageUncheckedCreateNestedManyWithoutSneakerInput = {
-    create?: XOR<Enumerable<SneakerImageCreateWithoutSneakerInput>, Enumerable<SneakerImageUncheckedCreateWithoutSneakerInput>>
-    connectOrCreate?: Enumerable<SneakerImageCreateOrConnectWithoutSneakerInput>
+    create?: XOR<SneakerImageCreateWithoutSneakerInput, SneakerImageUncheckedCreateWithoutSneakerInput> | SneakerImageCreateWithoutSneakerInput[] | SneakerImageUncheckedCreateWithoutSneakerInput[]
+    connectOrCreate?: SneakerImageCreateOrConnectWithoutSneakerInput | SneakerImageCreateOrConnectWithoutSneakerInput[]
     createMany?: SneakerImageCreateManySneakerInputEnvelope
-    connect?: Enumerable<SneakerImageWhereUniqueInput>
+    connect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
   }
 
   export type FloatFieldUpdateOperationsInput = {
@@ -3430,130 +3615,130 @@ export namespace Prisma {
   }
 
   export type SneakerUpdatesizesInput = {
-    set?: Enumerable<number>
-    push?: number | Enumerable<number>
+    set?: number[]
+    push?: number | number[]
   }
 
   export type SneakerImageUpdateManyWithoutSneakerNestedInput = {
-    create?: XOR<Enumerable<SneakerImageCreateWithoutSneakerInput>, Enumerable<SneakerImageUncheckedCreateWithoutSneakerInput>>
-    connectOrCreate?: Enumerable<SneakerImageCreateOrConnectWithoutSneakerInput>
-    upsert?: Enumerable<SneakerImageUpsertWithWhereUniqueWithoutSneakerInput>
+    create?: XOR<SneakerImageCreateWithoutSneakerInput, SneakerImageUncheckedCreateWithoutSneakerInput> | SneakerImageCreateWithoutSneakerInput[] | SneakerImageUncheckedCreateWithoutSneakerInput[]
+    connectOrCreate?: SneakerImageCreateOrConnectWithoutSneakerInput | SneakerImageCreateOrConnectWithoutSneakerInput[]
+    upsert?: SneakerImageUpsertWithWhereUniqueWithoutSneakerInput | SneakerImageUpsertWithWhereUniqueWithoutSneakerInput[]
     createMany?: SneakerImageCreateManySneakerInputEnvelope
-    set?: Enumerable<SneakerImageWhereUniqueInput>
-    disconnect?: Enumerable<SneakerImageWhereUniqueInput>
-    delete?: Enumerable<SneakerImageWhereUniqueInput>
-    connect?: Enumerable<SneakerImageWhereUniqueInput>
-    update?: Enumerable<SneakerImageUpdateWithWhereUniqueWithoutSneakerInput>
-    updateMany?: Enumerable<SneakerImageUpdateManyWithWhereWithoutSneakerInput>
-    deleteMany?: Enumerable<SneakerImageScalarWhereInput>
+    set?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    disconnect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    delete?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    connect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    update?: SneakerImageUpdateWithWhereUniqueWithoutSneakerInput | SneakerImageUpdateWithWhereUniqueWithoutSneakerInput[]
+    updateMany?: SneakerImageUpdateManyWithWhereWithoutSneakerInput | SneakerImageUpdateManyWithWhereWithoutSneakerInput[]
+    deleteMany?: SneakerImageScalarWhereInput | SneakerImageScalarWhereInput[]
   }
 
   export type SneakerImageUncheckedUpdateManyWithoutSneakerNestedInput = {
-    create?: XOR<Enumerable<SneakerImageCreateWithoutSneakerInput>, Enumerable<SneakerImageUncheckedCreateWithoutSneakerInput>>
-    connectOrCreate?: Enumerable<SneakerImageCreateOrConnectWithoutSneakerInput>
-    upsert?: Enumerable<SneakerImageUpsertWithWhereUniqueWithoutSneakerInput>
+    create?: XOR<SneakerImageCreateWithoutSneakerInput, SneakerImageUncheckedCreateWithoutSneakerInput> | SneakerImageCreateWithoutSneakerInput[] | SneakerImageUncheckedCreateWithoutSneakerInput[]
+    connectOrCreate?: SneakerImageCreateOrConnectWithoutSneakerInput | SneakerImageCreateOrConnectWithoutSneakerInput[]
+    upsert?: SneakerImageUpsertWithWhereUniqueWithoutSneakerInput | SneakerImageUpsertWithWhereUniqueWithoutSneakerInput[]
     createMany?: SneakerImageCreateManySneakerInputEnvelope
-    set?: Enumerable<SneakerImageWhereUniqueInput>
-    disconnect?: Enumerable<SneakerImageWhereUniqueInput>
-    delete?: Enumerable<SneakerImageWhereUniqueInput>
-    connect?: Enumerable<SneakerImageWhereUniqueInput>
-    update?: Enumerable<SneakerImageUpdateWithWhereUniqueWithoutSneakerInput>
-    updateMany?: Enumerable<SneakerImageUpdateManyWithWhereWithoutSneakerInput>
-    deleteMany?: Enumerable<SneakerImageScalarWhereInput>
+    set?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    disconnect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    delete?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    connect?: SneakerImageWhereUniqueInput | SneakerImageWhereUniqueInput[]
+    update?: SneakerImageUpdateWithWhereUniqueWithoutSneakerInput | SneakerImageUpdateWithWhereUniqueWithoutSneakerInput[]
+    updateMany?: SneakerImageUpdateManyWithWhereWithoutSneakerInput | SneakerImageUpdateManyWithWhereWithoutSneakerInput[]
+    deleteMany?: SneakerImageScalarWhereInput | SneakerImageScalarWhereInput[]
   }
 
-  export type NestedStringFilter = {
-    equals?: string
-    in?: Enumerable<string>
-    notIn?: Enumerable<string>
-    lt?: string
-    lte?: string
-    gt?: string
-    gte?: string
-    contains?: string
-    startsWith?: string
-    endsWith?: string
-    not?: NestedStringFilter | string
+  export type NestedStringFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringFilter<$PrismaModel> | string
   }
 
-  export type NestedDateTimeFilter = {
-    equals?: Date | string
-    in?: Enumerable<Date> | Enumerable<string>
-    notIn?: Enumerable<Date> | Enumerable<string>
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeFilter | Date | string
+  export type NestedDateTimeFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeFilter<$PrismaModel> | Date | string
   }
 
-  export type NestedStringWithAggregatesFilter = {
-    equals?: string
-    in?: Enumerable<string>
-    notIn?: Enumerable<string>
-    lt?: string
-    lte?: string
-    gt?: string
-    gte?: string
-    contains?: string
-    startsWith?: string
-    endsWith?: string
-    not?: NestedStringWithAggregatesFilter | string
-    _count?: NestedIntFilter
-    _min?: NestedStringFilter
-    _max?: NestedStringFilter
+  export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel>
+    in?: string[] | ListStringFieldRefInput<$PrismaModel>
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel>
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringWithAggregatesFilter<$PrismaModel> | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedStringFilter<$PrismaModel>
+    _max?: NestedStringFilter<$PrismaModel>
   }
 
-  export type NestedIntFilter = {
-    equals?: number
-    in?: Enumerable<number>
-    notIn?: Enumerable<number>
-    lt?: number
-    lte?: number
-    gt?: number
-    gte?: number
-    not?: NestedIntFilter | number
+  export type NestedIntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type NestedDateTimeWithAggregatesFilter = {
-    equals?: Date | string
-    in?: Enumerable<Date> | Enumerable<string>
-    notIn?: Enumerable<Date> | Enumerable<string>
-    lt?: Date | string
-    lte?: Date | string
-    gt?: Date | string
-    gte?: Date | string
-    not?: NestedDateTimeWithAggregatesFilter | Date | string
-    _count?: NestedIntFilter
-    _min?: NestedDateTimeFilter
-    _max?: NestedDateTimeFilter
+  export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeWithAggregatesFilter<$PrismaModel> | Date | string
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedDateTimeFilter<$PrismaModel>
+    _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
-  export type NestedFloatFilter = {
-    equals?: number
-    in?: Enumerable<number>
-    notIn?: Enumerable<number>
-    lt?: number
-    lte?: number
-    gt?: number
-    gte?: number
-    not?: NestedFloatFilter | number
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
-  export type NestedFloatWithAggregatesFilter = {
-    equals?: number
-    in?: Enumerable<number>
-    notIn?: Enumerable<number>
-    lt?: number
-    lte?: number
-    gt?: number
-    gte?: number
-    not?: NestedFloatWithAggregatesFilter | number
-    _count?: NestedIntFilter
-    _avg?: NestedFloatFilter
-    _sum?: NestedFloatFilter
-    _min?: NestedFloatFilter
-    _max?: NestedFloatFilter
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type SneakerCreateWithoutImagesInput = {
@@ -3567,7 +3752,7 @@ export namespace Prisma {
     releaseDate: Date | string
     retailPrice: number
     silhouette: string
-    sizes?: SneakerCreatesizesInput | Enumerable<number>
+    sizes?: SneakerCreatesizesInput | number[]
     quantity: number
   }
 
@@ -3582,7 +3767,7 @@ export namespace Prisma {
     releaseDate: Date | string
     retailPrice: number
     silhouette: string
-    sizes?: SneakerCreatesizesInput | Enumerable<number>
+    sizes?: SneakerCreatesizesInput | number[]
     quantity: number
   }
 
@@ -3594,6 +3779,12 @@ export namespace Prisma {
   export type SneakerUpsertWithoutImagesInput = {
     update: XOR<SneakerUpdateWithoutImagesInput, SneakerUncheckedUpdateWithoutImagesInput>
     create: XOR<SneakerCreateWithoutImagesInput, SneakerUncheckedCreateWithoutImagesInput>
+    where?: SneakerWhereInput
+  }
+
+  export type SneakerUpdateToOneWithWhereWithoutImagesInput = {
+    where?: SneakerWhereInput
+    data: XOR<SneakerUpdateWithoutImagesInput, SneakerUncheckedUpdateWithoutImagesInput>
   }
 
   export type SneakerUpdateWithoutImagesInput = {
@@ -3607,7 +3798,7 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
   }
 
@@ -3622,7 +3813,7 @@ export namespace Prisma {
     releaseDate?: DateTimeFieldUpdateOperationsInput | Date | string
     retailPrice?: FloatFieldUpdateOperationsInput | number
     silhouette?: StringFieldUpdateOperationsInput | string
-    sizes?: SneakerUpdatesizesInput | Enumerable<number>
+    sizes?: SneakerUpdatesizesInput | number[]
     quantity?: FloatFieldUpdateOperationsInput | number
   }
 
@@ -3646,7 +3837,7 @@ export namespace Prisma {
   }
 
   export type SneakerImageCreateManySneakerInputEnvelope = {
-    data: Enumerable<SneakerImageCreateManySneakerInput>
+    data: SneakerImageCreateManySneakerInput | SneakerImageCreateManySneakerInput[]
     skipDuplicates?: boolean
   }
 
@@ -3663,18 +3854,18 @@ export namespace Prisma {
 
   export type SneakerImageUpdateManyWithWhereWithoutSneakerInput = {
     where: SneakerImageScalarWhereInput
-    data: XOR<SneakerImageUpdateManyMutationInput, SneakerImageUncheckedUpdateManyWithoutImagesInput>
+    data: XOR<SneakerImageUpdateManyMutationInput, SneakerImageUncheckedUpdateManyWithoutSneakerInput>
   }
 
   export type SneakerImageScalarWhereInput = {
-    AND?: Enumerable<SneakerImageScalarWhereInput>
-    OR?: Enumerable<SneakerImageScalarWhereInput>
-    NOT?: Enumerable<SneakerImageScalarWhereInput>
-    id?: StringFilter | string
-    createdAt?: DateTimeFilter | Date | string
-    updatedAt?: DateTimeFilter | Date | string
-    url?: StringFilter | string
-    sneakerId?: StringFilter | string
+    AND?: SneakerImageScalarWhereInput | SneakerImageScalarWhereInput[]
+    OR?: SneakerImageScalarWhereInput[]
+    NOT?: SneakerImageScalarWhereInput | SneakerImageScalarWhereInput[]
+    id?: StringFilter<"SneakerImage"> | string
+    createdAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    updatedAt?: DateTimeFilter<"SneakerImage"> | Date | string
+    url?: StringFilter<"SneakerImage"> | string
+    sneakerId?: StringFilter<"SneakerImage"> | string
   }
 
   export type SneakerImageCreateManySneakerInput = {
@@ -3698,7 +3889,7 @@ export namespace Prisma {
     url?: StringFieldUpdateOperationsInput | string
   }
 
-  export type SneakerImageUncheckedUpdateManyWithoutImagesInput = {
+  export type SneakerImageUncheckedUpdateManyWithoutSneakerInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -3706,6 +3897,22 @@ export namespace Prisma {
   }
 
 
+
+  /**
+   * Aliases for legacy arg types
+   */
+    /**
+     * @deprecated Use SneakerCountOutputTypeDefaultArgs instead
+     */
+    export type SneakerCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SneakerCountOutputTypeDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SneakerImageDefaultArgs instead
+     */
+    export type SneakerImageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SneakerImageDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use SneakerDefaultArgs instead
+     */
+    export type SneakerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SneakerDefaultArgs<ExtArgs>
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

@@ -147,6 +147,10 @@ const config = {
         "fromEnvVar": null,
         "value": "darwin-arm64",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-1.1.x"
       }
     ],
     "previewFeatures": [
@@ -165,6 +169,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -173,8 +178,9 @@ const config = {
       }
     }
   },
-  "inlineSchema": "Z2VuZXJhdG9yIGNsaWVudCB7CiAgcHJvdmlkZXIgICAgICAgID0gInByaXNtYS1jbGllbnQtanMiCiAgb3V0cHV0ICAgICAgICAgID0gIi4uL3NyYy9nZW5lcmF0ZWQvY2xpZW50IgogIHByZXZpZXdGZWF0dXJlcyA9IFsiZGVubyJdCn0KCmRhdGFzb3VyY2UgZGIgewogIHByb3ZpZGVyID0gInBvc3RncmVzcWwiCiAgdXJsICAgICAgPSBlbnYoIlBPU1RHUkVTX0RCX0NPTk5FQ1RJT05fU1RSSU5HIikKfQoKbW9kZWwgU25lYWtlckltYWdlIHsKICBpZCAgICAgICAgU3RyaW5nICAgQGlkIEBkZWZhdWx0KHV1aWQoKSkKICBjcmVhdGVkQXQgRGF0ZVRpbWUgQGRlZmF1bHQobm93KCkpCiAgdXBkYXRlZEF0IERhdGVUaW1lIEB1cGRhdGVkQXQKICB1cmwgICAgICAgU3RyaW5nCiAgc25lYWtlcklkIFN0cmluZwogIHNuZWFrZXIgICBTbmVha2VyICBAcmVsYXRpb24oZmllbGRzOiBbc25lYWtlcklkXSwgcmVmZXJlbmNlczogW2lkXSkKfQoKbW9kZWwgU25lYWtlciB7CiAgaWQgICAgICAgICAgU3RyaW5nICAgICAgICAgQGlkIEBkZWZhdWx0KHV1aWQoKSkKICBjcmVhdGVkQXQgICBEYXRlVGltZSAgICAgICBAZGVmYXVsdChub3coKSkKICB1cGRhdGVkQXQgICBEYXRlVGltZSAgICAgICBAdXBkYXRlZEF0CiAgbmFtZSAgICAgICAgU3RyaW5nCiAgZGVzY3JpcHRpb24gU3RyaW5nCiAgaW1hZ2VzICAgICAgU25lYWtlckltYWdlW10KICBicmFuZCAgICAgICBTdHJpbmcKICBjb2xvcndheSAgICBTdHJpbmcKICByZWxlYXNlRGF0ZSBEYXRlVGltZQogIHJldGFpbFByaWNlIEZsb2F0CiAgc2lsaG91ZXR0ZSAgU3RyaW5nCiAgc2l6ZXMgICAgICAgRmxvYXRbXQogIHF1YW50aXR5ICAgIEZsb2F0Cn0K",
-  "inlineSchemaHash": "a4d291f2031993ffa1159af131702831f8d0c3f20a8e15602e1774759cc5d2dd"
+  "inlineSchema": "Z2VuZXJhdG9yIGNsaWVudCB7CiAgcHJvdmlkZXIgICAgICAgID0gInByaXNtYS1jbGllbnQtanMiCiAgb3V0cHV0ICAgICAgICAgID0gIi4uL3NyYy9nZW5lcmF0ZWQvY2xpZW50IgogIGJpbmFyeVRhcmdldHMgICA9IFsibmF0aXZlIiwgImRlYmlhbi1vcGVuc3NsLTEuMS54Il0KICBwcmV2aWV3RmVhdHVyZXMgPSBbImRlbm8iXQp9CgpkYXRhc291cmNlIGRiIHsKICBwcm92aWRlciA9ICJwb3N0Z3Jlc3FsIgogIHVybCAgICAgID0gZW52KCJQT1NUR1JFU19EQl9DT05ORUNUSU9OX1NUUklORyIpCn0KCm1vZGVsIFNuZWFrZXJJbWFnZSB7CiAgaWQgICAgICAgIFN0cmluZyAgIEBpZCBAZGVmYXVsdCh1dWlkKCkpCiAgY3JlYXRlZEF0IERhdGVUaW1lIEBkZWZhdWx0KG5vdygpKQogIHVwZGF0ZWRBdCBEYXRlVGltZSBAdXBkYXRlZEF0CiAgdXJsICAgICAgIFN0cmluZwogIHNuZWFrZXJJZCBTdHJpbmcKICBzbmVha2VyICAgU25lYWtlciAgQHJlbGF0aW9uKGZpZWxkczogW3NuZWFrZXJJZF0sIHJlZmVyZW5jZXM6IFtpZF0pCn0KCm1vZGVsIFNuZWFrZXIgewogIGlkICAgICAgICAgIFN0cmluZyAgICAgICAgIEBpZCBAZGVmYXVsdCh1dWlkKCkpCiAgY3JlYXRlZEF0ICAgRGF0ZVRpbWUgICAgICAgQGRlZmF1bHQobm93KCkpCiAgdXBkYXRlZEF0ICAgRGF0ZVRpbWUgICAgICAgQHVwZGF0ZWRBdAogIG5hbWUgICAgICAgIFN0cmluZwogIGRlc2NyaXB0aW9uIFN0cmluZwogIGltYWdlcyAgICAgIFNuZWFrZXJJbWFnZVtdCiAgYnJhbmQgICAgICAgU3RyaW5nCiAgY29sb3J3YXkgICAgU3RyaW5nCiAgcmVsZWFzZURhdGUgRGF0ZVRpbWUKICByZXRhaWxQcmljZSBGbG9hdAogIHNpbGhvdWV0dGUgIFN0cmluZwogIHNpemVzICAgICAgIEZsb2F0W10KICBxdWFudGl0eSAgICBGbG9hdAp9Cg==",
+  "inlineSchemaHash": "7a4b406fb7e7c3fe0caef48aa04ab1c18cb6990548553531b6eeed38b180dd7d",
+  "noEngine": false
 }
 
 const fs = require('fs')
@@ -213,6 +219,10 @@ Object.assign(exports, Prisma)
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
 path.join(process.cwd(), "src/generated/client/libquery_engine-darwin-arm64.dylib.node")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-debian-openssl-1.1.x.so.node");
+path.join(process.cwd(), "src/generated/client/libquery_engine-debian-openssl-1.1.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "src/generated/client/schema.prisma")

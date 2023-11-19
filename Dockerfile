@@ -3,6 +3,7 @@ FROM alpine:3.17
 ENV NODE_VERSION 18.18.2
 ENV ARCH x64
 
+
 RUN addgroup -g 1000 node \
     && adduser -u 1000 -G node -s /bin/sh -D node \
     && apk add --no-cache \
@@ -27,27 +28,30 @@ RUN addgroup -g 1000 node \
   rm -f "node-v$NODE_VERSION-linux-$ARCH-musl.tar.xz" \
   # Remove unused OpenSSL headers to save ~34MB. See this NodeJS issue: https://github.com/nodejs/node/issues/46451
   && find /usr/local/include/node/openssl/archs -mindepth 1 -maxdepth 1 ! -name "$OPENSSL_ARCH" -exec rm -rf {} \; \
-  && apk del .build-deps \
   # smoke tests
   && node --version \
   && npm --version
 
 
-ARG DENO_VERSION=1.38.2
-RUN curl -fsSL https://github.com/denoland/deno/releases/download/v${DENO_VERSION}/deno-x86_64-unknown-linux-gnu.zip \
-    --output deno.zip \
-  && unzip deno.zip \
-  && rm deno.zip \
-  && chmod 755 deno
+# RUN set -eu; curl -fsSL "https://github.com/denoland/deno/releases/download/v$DENO_VERSION/deno-x86_64-unknown-linux-gnu.zip" --output deno.zip; \
+#   unzip deno.zip; \
+#   rm deno.zip; \
+#   chmod 755 deno; \
+#   chmod +x deno; \
+#   mv deno /usr/bin/deno; \
+#   export PATH=$PATH:/usr/bin; \
+#     deno --version
+    
+# RUN curl -fsSL https://deno.land/x/install/install.sh | sudo DENO_INSTALL=/usr/local sh; deno --version
 
-WORKDIR /app
+RUN curl -fsSL https://deno.land/x/install/install.sh | DENO_INSTALL=/ sh
+#&& mv /home/node/.deno/bin/deno /bin/deno
 
-# Prefer not to run as root.
-USER deno
+RUN apk del .build-deps
 
 ENV SERVER_PORT 8000
 
-EXPOSE SERVER_PORT
+EXPOSE $SERVER_PORT
 
 COPY deno.json .
 

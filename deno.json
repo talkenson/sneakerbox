@@ -1,15 +1,20 @@
 {
-    "tasks": {
-        "dev": "deno run -A --unstable --watch=src/ src/main.ts"
+  "tasks": {
+    "dev": "deno run -A --unstable --watch=src/ src/main.ts",
+    "prisma:generate": "npx prisma generate && deno task prisma:patch",
+    "prisma:migrate:dev": "npx prisma migrate dev && deno task prisma:patch",
+    "prisma:patch": "sed -i -e 's/.\\/runtime\\/library/.\\/runtime\\/library.d.ts/g' src/generated/client/index.d.ts & sed -i -e 's/.\\/index/.\\/index.d.ts/g' src/generated/client/runtime/library.d.ts",
+    "pg": "deno task prisma:generate",
+    "pmd": "deno task prisma:migrate:dev"
+  },
+  "nodeModulesDir": true,
+  "importMap": "./import_map.json",
+  "lint": {
+    "files": {
+      "include": ["src/"]
     },
-    "nodeModulesDir": true,
-    "importMap": "./import_map.json",
-    "lint": {
-        "files": {
-            "include": ["src/"]
-        },
-        "rules": {
-            "exclude": ["no-unused-vars"]
-        }
+    "rules": {
+      "exclude": ["no-unused-vars"]
     }
+  }
 }
